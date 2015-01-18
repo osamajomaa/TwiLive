@@ -1,3 +1,4 @@
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -11,9 +12,9 @@ import twitter4j.User;
 
 
 class Location {
-	double Longitude;
-	double Latitude;
-	Location(double lng, double ltd) {
+	Double Longitude;
+	Double Latitude;
+	Location(Double lng, Double ltd) {
 		Longitude = lng;
 		Latitude = ltd;
 	}
@@ -29,32 +30,18 @@ public class Tweet {
 	private Location Loc;
 	private Date createDate;
 	
-	public Set<String> getAllHashTags(HashtagEntity[] EntityTags) {			
-		Set<String> hashtags = new HashSet<String>();
-		if (EntityTags == null)
-			return hashtags;
-		for(int i=0; i<EntityTags.length; i++)
-			hashtags.add(EntityTags[0].getText().toLowerCase());
-		return hashtags;
-	}
-	
-	public Set<String> getAllURLs(URLEntity[] EntityURLs) {
-		Set<String> urls = new HashSet<String>();
-		if (EntityURLs == null)
-			return urls;
-		for(int i=0; i<EntityURLs.length; i++)
-			urls.add(EntityURLs[0].getURL());
-		return urls;
-	}
-	
-	Tweet(User user, HashtagEntity[] hashtags, URLEntity[] urls,
+	Tweet(User user, Set<String> hashtags, Set<String> urls,
 				String text, String lang, GeoLocation loc, Date date) {
 		this.UserName = user.getScreenName();
-		this.HashTags = getAllHashTags(hashtags);
+		this.HashTags = hashtags;
+		this.Links = urls;
 		this.Text = text;
 		this.Lang = lang;
 		this.createDate = date;
-		this.Loc = new Location(loc.getLongitude(), loc.getLatitude());
+		if (loc != null)
+			this.Loc = new Location(loc.getLongitude(), loc.getLatitude());
+		else
+			this.Loc = new Location(null, null);
 	}
 	
 	public Set<String> getHashTags() {

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,11 +47,11 @@ public class Database {
 		dbName = dbname;
 	}
 	
-	public void createDB(String server, int port, String dbName) {
+	public void createDB() {
 		
 		MongoClient mongoClient = null;
 		try {
-			mongoClient = new MongoClient(server, port);
+			mongoClient = new MongoClient(Server, PORT);
 		} catch (UnknownHostException e) {
 			System.out.println("Error. Unknown Host!");
 			System.exit(0);
@@ -80,9 +81,9 @@ public class Database {
 		BasicDBList hashtags = new BasicDBList();
 		BasicDBList links = new BasicDBList();
 		for(String hashtag: tweet.getHashTags())
-			hashtags.add(new BasicDBObject("HashTag", hashtag));
+			hashtags.add(hashtag);
 		for(String url: tweet.getLinks())
-			links.add(new BasicDBObject("Link", url));
+			links.add(url);
 		BasicDBObject tweetObj = new BasicDBObject("TweetText", tweet.getText())
 							.append("UserName", tweet.getUserName())
 							.append("Lang", tweet.getLang())
@@ -96,6 +97,18 @@ public class Database {
 		} catch(DuplicateKeyException exc) {
 			//If user already exists, do nothing..
 		}
+	}
+	
+	public TimePoint GetTimePoint(Date date) {
+		DBCollection coll = db.getCollection("Tweet");
+		DBObject query = new BasicDBObject("$gt", new BasicDBObject("Date", date));
+		DBCursor cursor = coll.find(query);
+		int count = 0;
+		while (cursor.hasNext()) {
+			count++;
+			cursor.next();
+		}
+		return new TimePoint(count, date);
 	}
 
 }

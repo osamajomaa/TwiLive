@@ -84,19 +84,43 @@ public class Streamer {
     	return cb;
 	}
 	
-	public void grabber() {
+	public Set<String> getAllURLs(URLEntity[] EntityURLs) {
+		Set<String> urls = new HashSet<String>();
+		if (EntityURLs == null)
+			return urls;
+		for(int i=0; i<EntityURLs.length; i++)
+			urls.add(EntityURLs[i].getURL());
+		return urls;
+	}
+	
+	public Set<String> getAllHashTags(HashtagEntity[] EntityTags, String locale) {			
+		Set<String> hashtags = new HashSet<String>();
+		if (EntityTags == null)
+			return hashtags;
+		for(int i=0; i<EntityTags.length; i++)
+			hashtags.add(EntityTags[i].getText().toLowerCase(new Locale(locale)));
+		return hashtags;
+	}
+	
+	public void grabber(final Database db) {
 		TwitterStreamFactory tf = new  TwitterStreamFactory(Config);
 		TwitterStream twitterStream = tf.getInstance();
         StatusListener listener = new StatusListener() {
             @Override
             public void onStatus(Status status) {
             	
-            	Tweet tweet = new Tweet(status.getUser(), status.getHashtagEntities(),
-            								status.getURLEntities(), status.getText(),
-            									status.getLang(), status.getGeoLocation(), 
-            									status.getCreatedAt());
             	
-            		
+            	if (Languages.containsKey(status.getLang())) {
+	            	Set<String> links = getAllURLs(status.getURLEntities());
+	            	Set<String> hashtags = getAllHashTags(status.getHashtagEntities(), Languages.get(status.getLang()));
+	            	
+	            	Tweet tweet = new Tweet(status.getUser(), hashtags,
+	            								links, status.getText(),
+	            									status.getLang(), status.getGeoLocation(), 
+	            									status.getCreatedAt());
+	            	
+	            	db.addTweet(tweet);
+            	}
             }
 
             @Override
@@ -128,7 +152,7 @@ public class Streamer {
         twitterStream.sample();
         
 	}
-	
+	/*
 	public static void main(String[] args) {
 		List<String> langs = new ArrayList<String>();
 		langs.add("en");
@@ -136,5 +160,5 @@ public class Streamer {
 		String keyword = "the";
 		Streamer streamer = new Streamer(langs, keyword);
 		streamer.grabber();
-	}
+	}*/
 }
